@@ -2,6 +2,8 @@ import xlwings as xw
 import yfinance as yf
 import time
 import pandas as pd
+from sklearn.linear_model import LinearRegression
+import numpy as np
 
 wb = xw.Book(r"C:\Users\sjung\Downloads\trading_helper.xlsx")
 ws = wb.sheets[0]  # Short-term trading sheet
@@ -50,7 +52,41 @@ def get_quarterly_EBITDA(ws, cell, stock, ticker, target_quarter):
         ws[cell].value = df.loc["EBITDA", target]
     else:
         print("No Data found")
-        
+
+def clear_sheet(ws, range):
+    ws.range(range).value = None
+
+def clear_all(ws):
+    clear_sheet(ws, "E11:J11")
+    clear_sheet(ws, "E17:L17")
+    clear_sheet(ws, "E25:I25")
+    clear_sheet(ws, "E27:I27")
+    clear_sheet(ws, "E34:I34")
+    clear_sheet(ws, "E37:I37")
+    clear_sheet(ws, "O29:O33")
+
+def estimation_regression(cell, Revenue):
+    x = np.array([ws["E25"].value,
+                  ws["F25"].value,
+                  ws["G25"].value,
+                  ws["H25"].value,
+                  ws["I25"].value]).reshape(-1, 1)
+    y = np.array([ws["E11"].value,
+                  ws["F11"].value,
+                  ws["G11"].value,
+                  ws["H11"].value,
+                  ws["I11"].value])
+
+
+    model = LinearRegression()
+    model.fit(x, y)
+    print(model.predict([[Revenue]]))
+    ws[cell].value = model.predict([[Revenue]])
+
+clear_all(ws)
+
+
+
 # Key Financials (Income Statement)
 ticker = ws["E2"].value
 if ticker:
@@ -60,21 +96,21 @@ if ticker:
     get_quarterly_revenue(ws, "G25", stock, ticker, "2024-12-31")
     get_quarterly_revenue(ws, "H25", stock, ticker, "2025-03-31")
     get_quarterly_revenue(ws, "I25", stock, ticker, "2025-06-30")
-    get_quarterly_costofrev(ws, "E26", stock, ticker, "2024-06-30")
-    get_quarterly_costofrev(ws, "F26", stock, ticker, "2024-09-30")
-    get_quarterly_costofrev(ws, "G26", stock, ticker, "2024-12-31")
-    get_quarterly_costofrev(ws, "H26", stock, ticker, "2025-03-31")
-    get_quarterly_costofrev(ws, "I26", stock, ticker, "2025-06-30")
-    get_quarterly_EBIT(ws, "E33", stock, ticker, "2024-06-30")
-    get_quarterly_EBIT(ws, "F33", stock, ticker, "2024-09-30")
-    get_quarterly_EBIT(ws, "G33", stock, ticker, "2024-12-31")
-    get_quarterly_EBIT(ws, "H33", stock, ticker, "2025-03-31")
-    get_quarterly_EBIT(ws, "I33", stock, ticker, "2025-06-30")
-    get_quarterly_EBITDA(ws, "E36", stock, ticker, "2024-06-30")
-    get_quarterly_EBITDA(ws, "F36", stock, ticker, "2024-09-30")
-    get_quarterly_EBITDA(ws, "G36", stock, ticker, "2024-12-31")
-    get_quarterly_EBITDA(ws, "H36", stock, ticker, "2025-03-31")
-    get_quarterly_EBITDA(ws, "I36", stock, ticker, "2025-06-30")
+    get_quarterly_costofrev(ws, "E27", stock, ticker, "2024-06-30")
+    get_quarterly_costofrev(ws, "F27", stock, ticker, "2024-09-30")
+    get_quarterly_costofrev(ws, "G27", stock, ticker, "2024-12-31")
+    get_quarterly_costofrev(ws, "H27", stock, ticker, "2025-03-31")
+    get_quarterly_costofrev(ws, "I27", stock, ticker, "2025-06-30")
+    get_quarterly_EBIT(ws, "E34", stock, ticker, "2024-06-30")
+    get_quarterly_EBIT(ws, "F34", stock, ticker, "2024-09-30")
+    get_quarterly_EBIT(ws, "G34", stock, ticker, "2024-12-31")
+    get_quarterly_EBIT(ws, "H34", stock, ticker, "2025-03-31")
+    get_quarterly_EBIT(ws, "I34", stock, ticker, "2025-06-30")
+    get_quarterly_EBITDA(ws, "E37", stock, ticker, "2024-06-30")
+    get_quarterly_EBITDA(ws, "F37", stock, ticker, "2024-09-30")
+    get_quarterly_EBITDA(ws, "G37", stock, ticker, "2024-12-31")
+    get_quarterly_EBITDA(ws, "H37", stock, ticker, "2025-03-31")
+    get_quarterly_EBITDA(ws, "I37", stock, ticker, "2025-06-30")
 
 # Peer valuation
 tickertarget = ws_peer["F16"].value
@@ -86,10 +122,10 @@ ws_peer["J16"].value = market_cap_target
 ticker = ws["E2"].value
 if ticker:
     stock = yf.Ticker(ticker)
-    add_history(ws, "E11", stock, "2021-12-25", "2022-01-01")
-    add_history(ws, "F11", stock, "2022-12-25", "2023-01-01")
-    add_history(ws, "G11", stock, "2023-12-25", "2024-01-01")
-    add_history(ws, "H11", stock, "2024-12-25", "2025-01-01")
+    add_history(ws, "E11", stock, "2024-06-27", "2024-06-30")
+    add_history(ws, "F11", stock, "2024-09-27", "2024-09-30")
+    add_history(ws, "G11", stock, "2024-12-25", "2024-12-31")
+    add_history(ws, "H11", stock, "2025-03-27", "2025-03-30")
     add_history(ws, "I11", stock, "2025-06-27", "2025-06-30")
 
 # Stock price for 7 days
@@ -136,7 +172,11 @@ if ticker:
         ws["L17"].value = price_today0
 
 
-
+estimation_regression("O29", ws["M29"].value)
+estimation_regression("O30", ws["M30"].value)
+estimation_regression("O31", ws["M31"].value)
+estimation_regression("O32", ws["M32"].value)
+estimation_regression("O33", ws["M33"].value)
 
 while True:
     ticker = ws["E2"].value 
@@ -147,4 +187,5 @@ while True:
         ws["F2"].value = time.strftime("%H:%M:%S")  
         print(f"{ticker}: {price}")
     time.sleep(5)
+
 
