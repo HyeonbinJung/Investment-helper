@@ -4,6 +4,14 @@ import time
 
 wb = xw.Book(r"C:\Users\sjung\Downloads\trading_helper.xlsx")
 ws = wb.sheets[0]  # Short-term trading sheet
+ws_peer = wb.sheets[2]
+
+#Peer valuation
+tickertarget = ws_peer["F16"].value
+stock_target = yf.Ticker(tickertarget)
+market_cap_target = stock_target.info.get("marketCap")
+ws_peer["J16"].value = market_cap_target 
+
 
 ticker = ws["E2"].value
 if ticker:
