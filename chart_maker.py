@@ -133,6 +133,36 @@ def rsi(ticker, window):
 
     print(data[["Close", "RSI"]].tail(10))
 
+#Market Cap
+def marketcap(ticker):
+    stock_target = yf.Ticker(ticker)
+    print(stock_target.info.get("marketCap"))
+
+#Ratio (Close - Open)
+def get_date_growth(days, page, cell_Alpha, cell_num, ticker):
+    ws = wb.sheets[page]
+    col_num = column_index_from_string(cell_Alpha)
+    stock = yf.Ticker(ticker)
+    ws[str(cell_Alpha)+str(cell_num)].value = "(Close - Open)/Open"
+    ws[str(cell_Alpha)+str(cell_num)].api.Font.Bold = True
+    ws[str(cell_Alpha)+str(cell_num)].api.Font.Italic = True
+    for i in range(days):
+        reverse = days - i 
+        alpha = get_column_letter(col_num + 1 + i)
+        stock_cell = alpha + str(cell_num)
+        target_date = (date.today() - timedelta(days=reverse - 1))
+        target_date_2 = (date.today() - timedelta(days=reverse - 2))
+        try:
+            open_price = stock.history(start=target_date, end=target_date_2)["Open"].iloc[0]
+            close_price = stock.history(start=target_date, end=target_date_2)["Close"].iloc[0]
+            ws[stock_cell].value = (close_price - open_price)
+            ws[stock_cell].api.Borders.Weight = 2
+        except Exception as e:
+            ws[stock_cell].value = False
+            ws[stock_cell].api.Borders.Weight = 2
+    
+get_date_growth(30, 4, "A", 8, "TSLA")
+
 rsi("TSLA", 14) 
 #days_loader(30, 4, "A", 1)
 #get_chart(30, 4, "A", 3, "TSLA", "Open")
