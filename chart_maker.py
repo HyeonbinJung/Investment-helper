@@ -98,14 +98,31 @@ def get_chart_advance_fluctuation_range2(days, page, cell_Alpha, cell_num, ticke
         except Exception as e:
             ws[stock_cell].value = False
             ws[stock_cell].api.Borders.Weight = 2
-            
-days_loader(30, 4, "A", 1)
-get_chart(30, 4, "A", 3, "TSLA", "Open")
-get_chart(30, 4, "A", 4, "TSLA", "Close")
-get_chart(30, 4, "A", 6, "TSLA", "High")
-get_chart(30, 4, "A", 7, "TSLA", "Low")
 
-get_chart(30, 4, "A", 9, "TSLA", "Volume")
+#RSI = AvgGain(평균상승폭)/AvgLoss(평균하락폭)
+
+def rsi(ticker, window):
+    data = yf.download(ticker, period="3mo", interval="1d")
+    data["Change"] = data["Close"].diff()
+    data["Gain"] = data["Change"].clip(lower=0)
+    data["Loss"] = -data["Change"].clip(upper=0)
+    data["AvgGain"] = data["Gain"].ewm(alpha=1/window, min_periods=window).mean()
+    data["AvgLoss"] = data["Loss"].ewm(alpha=1/window, min_periods=window).mean()
+
+    data["RS"] = data["AvgGain"] / data["AvgLoss"]
+    data["RSI"] = 100 - (100 / (1 + data["RS"]))
+
+    latest_rsi = data["RSI"].iloc[-1]
+    print(f"{ticker} RSI: {latest_rsi:.2f}")
+
+    print(data[["Close", "RSI"]].tail(10))
+ 
+#days_loader(30, 4, "A", 1)
+#get_chart(30, 4, "A", 3, "TSLA", "Open")
+#get_chart(30, 4, "A", 4, "TSLA", "Close")
+#get_chart(30, 4, "A", 6, "TSLA", "High")
+#get_chart(30, 4, "A", 7, "TSLA", "Low")
+#get_chart(30, 4, "A", 9, "TSLA", "Volume")
 
 
 
