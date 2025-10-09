@@ -78,6 +78,8 @@ def get_chart_advance_fluctuation_range2(days, page, cell_Alpha, cell_num, ticke
     ws[str(cell_Alpha)+str(cell_num)].value = "Fluctuation(High / Low)"
     ws[str(cell_Alpha)+str(cell_num)].api.Font.Bold = True
     ws[str(cell_Alpha)+str(cell_num)].api.Font.Italic = True
+    fluct = 0.00
+    no_price_day = 0
     for i in range(days):
         reverse = days - i 
         alpha = get_column_letter(col_num + 1 + i)
@@ -88,6 +90,7 @@ def get_chart_advance_fluctuation_range2(days, page, cell_Alpha, cell_num, ticke
             high = stock.history(start=target_date, end=target_date_2)["High"].iloc[0]
             low = stock.history(start=target_date, end=target_date_2)["Low"].iloc[0]
             ws[stock_cell].value = high / low
+            fluct = fluct + high / low
             if high / low > 1.30:
                 ws[stock_cell].api.Font.Bold = True
             elif high / low > 1.10:
@@ -97,10 +100,23 @@ def get_chart_advance_fluctuation_range2(days, page, cell_Alpha, cell_num, ticke
             ws[stock_cell].api.Borders.Weight = 2
         except Exception as e:
             ws[stock_cell].value = False
+            no_price_day = no_price_day + 1
             ws[stock_cell].api.Borders.Weight = 2
+    print("Average Fluctuation(High Price/Low Price), given period: "+str(fluct/(days - no_price_day)))
+
+def get_all(days, page, cell_Alpha, cell_num, ticker):
+    days_loader(days, page, cell_Alpha, cell_num)
+    get_chart(days, page, cell_Alpha, cell_num+2, ticker, "Open")
+    get_chart(days, page, cell_Alpha, cell_num+3, ticker, "Close")
+    get_chart(days, page, cell_Alpha, cell_num+5, ticker, "High")
+    get_chart(days, page, cell_Alpha, cell_num+6, ticker, "Low")
+    get_chart(days, page, cell_Alpha, cell_num+8, ticker, "Volume")
+
+    get_chart_advance_fluctuation_range2(days, page, cell_Alpha, cell_num+10, ticker)
+
+get_all(30, 4, "A", 1, "TSLA")
 
 #RSI = AvgGain(평균상승폭)/AvgLoss(평균하락폭)
-
 def rsi(ticker, window):
     data = yf.download(ticker, period="3mo", interval="1d")
     data["Change"] = data["Close"].diff()
@@ -116,7 +132,8 @@ def rsi(ticker, window):
     print(f"{ticker} RSI: {latest_rsi:.2f}")
 
     print(data[["Close", "RSI"]].tail(10))
- 
+
+rsi("TSLA", 14) 
 #days_loader(30, 4, "A", 1)
 #get_chart(30, 4, "A", 3, "TSLA", "Open")
 #get_chart(30, 4, "A", 4, "TSLA", "Close")
