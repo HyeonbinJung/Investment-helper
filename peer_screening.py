@@ -21,11 +21,21 @@ def get_marketcap(page, ticker):
 #get_marketcap(4, "TSLA")
 
 
-
 def insert_excel(page, cell, value):
     ws = wb.sheets[page]
     ws[cell].value = value
     
+def get_quarterly_NI(ticker, target_quarter):
+    stock = yf.Ticker(ticker)
+    df = stock.quarterly_financials
+    if "Net Income" not in df.index:
+        return str("None");
+    target = pd.to_datetime(target_quarter)
+    if target in df.columns:
+        return (df.loc["Net Income", target]);
+    else:
+         return str("None");
+
 def get_quarterly_revenue(ticker, target_quarter):
     stock = yf.Ticker(ticker)
     df = stock.quarterly_financials
@@ -37,16 +47,15 @@ def get_quarterly_revenue(ticker, target_quarter):
     else:
          return str("None");
 
-
-def insert_quarterly_revenue(ticker, cell_Alpha, cell_num):
+def insert_quarterly_revenue(ticker, cell_Alpha, cell_num, is_type):
     col_num = column_index_from_string(cell_Alpha)
-    revenue_1q2024 = get_quarterly_revenue(ticker, "2024-03-31")
-    revenue_2q2024 = get_quarterly_revenue(ticker, "2024-06-30")
-    revenue_3q2024 = get_quarterly_revenue(ticker, "2024-09-30")
-    revenue_4q2024 = get_quarterly_revenue(ticker, "2024-12-31")
-    revenue_1q2025 = get_quarterly_revenue(ticker, "2025-03-31")
-    revenue_2q2025 = get_quarterly_revenue(ticker, "2025-06-30")
-    revenue_3q2025 = get_quarterly_revenue(ticker, "2025-09-30")
+    revenue_1q2024 = get_quarterly_istype(ticker, "2024-03-31")
+    revenue_2q2024 = get_quarterly_istype(ticker, "2024-06-30")
+    revenue_3q2024 = get_quarterly_istype(ticker, "2024-09-30")
+    revenue_4q2024 = get_quarterly_istype(ticker, "2024-12-31")
+    revenue_1q2025 = get_quarterly_istype(ticker, "2025-03-31")
+    revenue_2q2025 = get_quarterly_istype(ticker, "2025-06-30")
+    revenue_3q2025 = get_quarterly_istype(ticker, "2025-09-30")
     for i in range(7):
         alpha = get_column_letter(col_num + i)
 
