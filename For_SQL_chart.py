@@ -136,7 +136,7 @@ def get_chart_sql(days, ticker):
                               , high_to_insert, low_to_insert, host="localhost", port="5432")
 
 #insert_stock_data("testdb", "postgres", password_sql, "2024-10-15", "TSLA", 20, 20, 20, 20, 20, host="localhost", port="5432")
-#clear_table("testdb", "postgres", password_sql, "stock_data", host="localhost", port="5432")
-get_chart_sql(30, "TSLA")
+clear_table("testdb", "postgres", password_sql, "stock_data", host="localhost", port="5432")
+#get_chart_sql(30, "TSLA")
 
 
