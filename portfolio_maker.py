@@ -13,6 +13,32 @@ columns = {
 # Create Database for Portfolio
 create_table("portfolio", columns, "testdb", "postgres", password_sql, host="localhost", port="5432")
 
+# add portfolio
+
+# remove portfolio
+def remove_port(ticker):
+    query = f"""DELETE FROM portfolio
+        WHERE ticker = '{ticker}';"""
+    try:
+        conn = psycopg2.connect(
+            dbname="testdb",
+            user="postgres",
+            password=password_sql,
+            host="localhost",
+            port="5432"
+        )
+        cur = conn.cursor()
+        cur.execute(query)
+        conn.commit()
+        print(f"Portfolio {ticker} removed.")
+    except Exception as e:
+        print("Error: ", e)
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
+remove_port("TSLA")
+
 # Return Purchased price / total investment / number of stock
 def get_portfolio(ticker, return_type):
     query = f"""
@@ -40,10 +66,35 @@ def get_portfolio(ticker, return_type):
             cur.close()
             conn.close()
 
+def get_all_tickers_and_prices(return_type):
+    query = f"""
+        SELECT ticker, {return_type}
+        FROM portfolio;
+    """
+    try:
+        conn = psycopg2.connect(
+            dbname="testdb",
+            user="postgres",
+            password=password_sql,
+            host="localhost",
+            port="5432"
+        )
+        cur = conn.cursor()
+        cur.execute(query)
+        rows = cur.fetchall()
+        for row in rows:
+            print(f"Ticker: {row[0]}, Price: {row[1]}")
+        return rows  # [("AAPL", 180.3), ("TSLA", 250.5), ...]
+    except Exception as e:
+        print("Error:", e)
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
+
+
 def get_total_investment(ticker):
     return get_portfolio(ticker, stock_price) * get_portfolio(ticker, number_of_stock)
-
-get_portfolio("TSLA", "stock_Price")
 
 
 
